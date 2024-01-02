@@ -1,7 +1,7 @@
 ## Nodejs V18
 FROM node:alpine
 
-LABEL org.opencontainers.image.source https://github.com/nemrucloud/nodejs-expressjs
+LABEL org.opencontainers.image.source https://github.com/emresudo/ftp-over-http
 
 WORKDIR /app
 COPY . /app
