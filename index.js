@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import async from "async";
-import { readFile, rename, unlink, readdir, writeFile, mkdir, rmdir } from "fs/promises";
+import { readFile, rename, unlink, readdir, writeFile, mkdir, rmdir, cp } from "fs/promises";
 import { dirname, join } from "path";
 
 const app = express();
@@ -20,6 +20,9 @@ app.get("/files", async (req, res) => {
     for (const file of list) {
         try {
             if (file.isDirectory()) {
+                continue;
+            }
+            if (file.path.includes(".git")) {
                 continue;
             }
             if (file.path.includes("node_modules")) {
@@ -158,12 +161,38 @@ app.post("/mkdir", async (req, res) => {
         if (!folder) return res.json({ status: false, message: "Please enter a folder name.", });
 
         if (folder.includes("..")) {
-            return res.json({ status: false, message: "Please enter valid file name and new file name.", });
+            return res.json({ status: false, message: "Please enter valid folder name.", });
         }
 
         const folderPath = join(dir, folder);
 
         await mkdir(dirname(folderPath), { recursive: true })
+
+        return res.json({ status: true });
+    } catch (error) {
+        return res.json({ status: false, error });
+    }
+});
+
+app.post("/cp", async (req, res) => {
+    try {
+        const { source, destination } = req.body;
+
+        if (!source) return res.json({ status: false, message: "Please enter a folder name.", });
+        if (!destination) return res.json({ status: false, message: "Please enter a folder name.", });
+
+        if (source.includes("..")) {
+            return res.json({ status: false, message: "Please enter valid file folder name.", });
+        }
+
+        if (destination.includes("..")) {
+            return res.json({ status: false, message: "Please enter valid file folder name.", });
+        }
+
+        const sourceFolderPath = join(dir, source);
+        const destinationFolderPath = join(join(dir, destination), source);
+
+        await cp(sourceFolderPath, destinationFolderPath, { recursive: true })
 
         return res.json({ status: true });
     } catch (error) {
