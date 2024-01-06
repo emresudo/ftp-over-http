@@ -19,9 +19,6 @@ app.get("/files", async (req, res) => {
 
     for (const file of list) {
         try {
-            if (file.isDirectory()) {
-                continue;
-            }
             if (file.path.includes(".git")) {
                 continue;
             }
@@ -29,10 +26,19 @@ app.get("/files", async (req, res) => {
                 continue;
             }
 
-            results.push({
-                path: file.path + "/" + file.name,
-                content: null,
-            });
+            if (file.isDirectory()) {
+                results.push({
+                    type: 1,
+                    path: file.path + "/" + file.name,
+                    content: null,
+                });
+            } else {
+                results.push({
+                    type: 0,
+                    path: file.path + "/" + file.name,
+                    content: null,
+                });
+            }
         } catch (error) { }
     }
 
@@ -41,13 +47,11 @@ app.get("/files", async (req, res) => {
     const responses = await async.mapLimit(
         results,
         CONCURRENCY_LIMIT,
-        async (f) => {
-            return readFile(f.path);
-        }
+        async (f) => { if (f.type == 0) return readFile(f.path); }
     );
 
     for (let index = 0; index < responses.length; index++) {
-        results[index].content = responses[index].toString();
+        results[index].content = responses[index]?.toString();
     }
 
     return res.json(results);
