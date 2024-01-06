@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-const dir = "/app";
+const dir = "/root/monaco-tree";
 
 app.get("/files", async (req, res) => {
     let results = [];
@@ -62,7 +62,7 @@ app.post("/rm", async (req, res) => {
         const { fileName } = req.body;
         if (!fileName) return res.json({ status: false, message: "Please enter file name." });
 
-        const path = join(dir, dosyaAdi);
+        const path = join(dir, fileName);
 
         await unlink(path);
 
