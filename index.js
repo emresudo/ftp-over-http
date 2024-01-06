@@ -194,7 +194,7 @@ app.post("/cp", async (req, res) => {
         }
 
         const sourceFolderPath = join(dir, source);
-        const destinationFolderPath = join(join(dir, destination), source);
+        const destinationFolderPath = join(dir, destination);
 
         await cp(sourceFolderPath, destinationFolderPath, { recursive: true })
 
