@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-const dir = "/root/monaco-tree";
+const dir = "/app";
 
 app.get("/files", async (req, res) => {
     let results = [];
