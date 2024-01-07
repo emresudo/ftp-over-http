@@ -170,7 +170,7 @@ app.post("/mkdir", async (req, res) => {
 
         const folderPath = join(dir, folder);
 
-        await mkdir(dirname(folderPath), { recursive: true })
+        await mkdir(folderPath, { recursive: true })
 
         return res.json({ status: true });
     } catch (error) {
