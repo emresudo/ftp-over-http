@@ -29,30 +29,28 @@ app.get("/files", async (req, res) => {
             if (file.isDirectory()) {
                 results.push({
                     type: 1,
-                    path: file.path + "/" + file.name,
-                    content: null,
+                    path: file.path + "/" + file.name
                 });
             } else {
                 results.push({
                     type: 0,
-                    path: file.path + "/" + file.name,
-                    content: null,
+                    path: file.path + "/" + file.name
                 });
             }
         } catch (error) { }
     }
 
-    const CONCURRENCY_LIMIT = 30;
+    // const CONCURRENCY_LIMIT = 30;
 
-    const responses = await async.mapLimit(
-        results,
-        CONCURRENCY_LIMIT,
-        async (f) => { if (f.type == 0) return readFile(f.path); }
-    );
+    // const responses = await async.mapLimit(
+    //     results,
+    //     CONCURRENCY_LIMIT,
+    //     async (f) => { if (f.type == 0) return readFile(f.path); }
+    // );
 
-    for (let index = 0; index < responses.length; index++) {
-        results[index].content = responses[index]?.toString();
-    }
+    // for (let index = 0; index < responses.length; index++) {
+    //     results[index].content = responses[index]?.toString();
+    // }
 
     return res.json(results);
 });
@@ -91,11 +89,11 @@ app.post("/rmdir", async (req, res) => {
     }
 });
 
-app.get("/read", async (req, res) => {
+app.post("/read", async (req, res) => {
     try {
         const { fileName } = req.body;
 
-        if (fileName.includes("..")) {
+        if (!fileName || fileName.includes("..")) {
             return res.json({ status: false, message: "Please enter valid file name.", });
         }
 
@@ -107,6 +105,7 @@ app.get("/read", async (req, res) => {
             content,
         });
     } catch (error) {
+        console.log(error);
         return res.json({ status: false, error });
     }
 });
