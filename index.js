@@ -3,12 +3,17 @@ import cors from "cors";
 import async from "async";
 import { readFile, rename, unlink, readdir, writeFile, mkdir, rmdir, cp } from "fs/promises";
 import { dirname, join } from "path";
+import multer from "multer";
+import admZip from "adm-zip";
+const upload = multer()
 
 const app = express();
 const port = 4000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
+app.use(express.raw({ limit: "100mb" }));
+
 app.use(cors());
 
 const dir = "/app";
@@ -151,6 +156,49 @@ app.post("/put", async (req, res) => {
 
         await writeFile(filePath, content);
 
+        return res.json({ status: true });
+    } catch (error) {
+        return res.json({ status: false, error });
+    }
+});
+
+app.post("/upload", upload.single("file"), async (req, res) => {
+    try {
+        const { fileName } = req.body;
+
+        if (!fileName) return res.json({ status: false, message: "Please enter a filename.", });
+
+        if (fileName.includes("..")) {
+            return res.json({ status: false, message: "Please enter valid file name and new file name.", });
+        }
+
+        const filePath = join(dir, fileName);
+
+        await mkdir(dirname(filePath), { recursive: true })
+
+        await writeFile(filePath, req.file.buffer);
+
+        return res.json({ status: true });
+    } catch (error) {
+        return res.json({ status: false, error });
+    }
+});
+
+app.post("/unzip", async (req, res) => {
+    try {
+        const { filename } = req.body;
+
+        if (!filename) return res.json({ status: false, message: "Please enter a filename.", });
+
+        if (filename.includes("..")) {
+            return res.json({ status: false, message: "Please enter valid file name and new file name.", });
+        }
+
+        const filePath = join(dir, filename);
+        const currentDir = dirname(filePath);
+
+        const zip = new admZip(filePath);
+        zip.extractAllTo(currentDir, true);
         return res.json({ status: true });
     } catch (error) {
         return res.json({ status: false, error });
